@@ -1,2 +1,21 @@
-*.env
+# --- Données ---
+data_raw/
+data_processed/
+*.csv
+*.parquet
+*.zip
+
+# --- Python & Environnement ---
+__pycache__/
+*.pyc
 env/
+venv/
+*.env
+
+# --- Système ---
+.DS_Store
+thumbs.db
+
+# --- IDE ---
+.vscode/
+.idea/
