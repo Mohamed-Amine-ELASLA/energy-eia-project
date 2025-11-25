@@ -1,39 +1,45 @@
-#  End-to-End Energy Forecasting Project (US Data)
+# End-to-End US Energy Demand Forecasting
 
-##  Aperçu du Projet
-Ce projet est un pipeline de données complet (**Data Engineering → Data Science → BI**) visant à prédire la consommation électrique des États-Unis (US48) heure par heure.
-L'objectif est d'aider à l'équilibrage du réseau électrique en anticipant la demande grâce au Machine Learning.
+## Project Overview
+This project is a full-stack data solution designed to predict hourly electricity consumption for the United States (Lower 48 states).
+The goal is to simulate a real-world scenario where Grid Operators need accurate forecasts to balance supply and demand using **Data Engineering**, **Machine Learning**, and **Business Intelligence**.
 
-**Résultat :** Modèle XGBoost avec une précision de **MAPE = 2.17%**.
-
----
-
-##  Architecture Technique
-
-Le projet suit une architecture moderne "Modern Data Stack" :
-
-1.  **Ingestion (ETL) :**
-    *   Connexion à l'API **EIA (Energy Information Administration)** pour la consommation.
-    *   Connexion à l'API **Open-Meteo** pour récupérer les températures de 3 zones stratégiques (NY, Texas, Californie).
-    *   Stockage des données brutes (Raw) en CSV.
-
-2.  **Processing & Stockage :**
-    *   Nettoyage et typage avec **Pandas**.
-    *   Stockage optimisé en format **Parquet** (Partitionnement par Année/Mois).
-    *   Feature Engineering : Création de variables de retard (Lags 24h/168h), moyennes mobiles et features calendaires.
-
-3.  **Machine Learning (Forecast) :**
-    *   Algorithme : **XGBoost Regressor**.
-    *   Stratégie de validation : Time Series Split (Entraînement sur le passé, Test sur le futur).
-    *   Métrique : MAPE (Mean Absolute Percentage Error).
-
-4.  **Business Intelligence (BI) :**
-    *   Dashboard interactif réalisé avec **Power BI**.
-    *   Visualisation Temps Réel (Réel vs Prédiction) et analyse des corrélations Météo.
+**Key Result:** The XGBoost model achieved a **MAPE (Mean Absolute Percentage Error) of 2.17%** on the test set.
 
 ---
 
-## Visualisation
+## Technical Architecture
+
+The project follows a "Modern Data Stack" approach:
+
+### 1. Data Engineering (ETL)
+*   **Data Sources:**
+    *   **Electricity Load:** Extracted from the **EIA API v2** (US Energy Information Administration).
+    *   **Weather Data:** Historical temperature data for 3 strategic hubs (New York, Houston, Los Angeles) fetched via **Open-Meteo API**.
+*   **Processing:**
+    *   Data cleaning and type casting using **Pandas**.
+    *   Handling time zones (UTC normalization) and missing values.
+    *   Storage optimized in **Parquet** format (Partitioned by Year/Month).
+
+### 2. Machine Learning
+*   **Feature Engineering:**
+    *   Created Lag features (t-24h, t-168h) to capture daily and weekly seasonality.
+    *   Rolling window statistics (24h moving average).
+    *   Calendar features (Day of week, Hour, Month, Quarter).
+*   **Modeling:**
+    *   Algorithm: **XGBoost Regressor**.
+    *   Validation Strategy: **Time Series Split** (Training on past data, Testing on future unseen data to avoid look-ahead bias).
+    *   Performance Metric: **MAPE** (2.17%) and **MAE**.
+
+### 3. Business Intelligence (BI)
+*   **Visualization:** Interactive **Power BI Dashboard**.
+*   **Insights:**
+    *   Real-time comparison of Actual vs. Predicted Load.
+    *   Analysis of the non-linear "U-shape" correlation between Temperature and Demand.
+
+---
+
+## Dashboard Preview
 
 ![Dashboard Power BI](./dashboard.png)
 
