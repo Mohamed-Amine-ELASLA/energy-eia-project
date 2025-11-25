@@ -48,7 +48,7 @@ The project follows a "Modern Data Stack" approach:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/energy-eia-project.git
+git clone https://github.com/Mohamed-Amine-ELASLA/energy-eia-project.git
 cd energy-eia-project
 ```
 ### 2. Install dependencies
