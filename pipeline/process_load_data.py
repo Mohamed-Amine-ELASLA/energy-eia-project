@@ -2,18 +2,18 @@ import pandas as pd
 import os
 
 # --- CONFIGURATION ---
-INPUT_FILE = "data_raw/us_load_2022_2023.csv"
-OUTPUT_DIR = "data_processed/load"  # On sépare par "sujet" (ici load)
+INPUT_FILE = "data_raw/us_load_latest.csv"
+OUTPUT_DIR = "data_processed/load"  
 
 def process_data():
-    print("⚙️ Début du nettoyage...")
+    print(" Début du nettoyage...")
     
     # 1. Lecture du CSV Brut
     # dtype={'value': float} force la colonne value à être numérique dès la lecture
     try:
         df = pd.read_csv(INPUT_FILE)
     except FileNotFoundError:
-        print(f"❌ Erreur : Le fichier {INPUT_FILE} n'existe pas.")
+        print(f" Erreur : Le fichier {INPUT_FILE} n'existe pas.")
         return
 
     print(f"   Lecture de {len(df)} lignes.")
@@ -37,7 +37,7 @@ def process_data():
     # Si l'API a envoyé des trous, on peut décider de les supprimer ou de les remplir
     missing = df['demand_mwh'].isnull().sum()
     if missing > 0:
-        print(f"⚠️ Attention : {missing} valeurs manquantes détectées.")
+        print(f" Attention : {missing} valeurs manquantes détectées.")
         # Pour l'instant, on supprime les lignes vides (on verra l'imputation plus tard)
         df = df.dropna(subset=['demand_mwh'])
 
@@ -51,7 +51,7 @@ def process_data():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    print(f"💾 Sauvegarde en Parquet dans {OUTPUT_DIR}...")
+    print(f" Sauvegarde en Parquet dans {OUTPUT_DIR}...")
     
     df.to_parquet(
         OUTPUT_DIR,
@@ -61,7 +61,7 @@ def process_data():
         index=False
     )
     
-    print("✅ Terminé ! Structure de fichiers créée.")
+    print("Terminé ! Structure de fichiers créée.")
 
 if __name__ == "__main__":
     process_data()

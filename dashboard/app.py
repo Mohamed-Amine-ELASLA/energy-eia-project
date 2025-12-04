@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="Energy Forecasting Dashboard", layout="wide")
 
-st.title("⚡ US Energy Consumption & Forecasting")
+st.title("US Energy Consumption & Forecasting")
 st.markdown("Ce dashboard visualise la consommation électrique des USA (US48) et compare les prédictions du modèle XGBoost avec la réalité.")
 
 # --- CHARGEMENT DES DONNÉES ---
@@ -24,7 +24,7 @@ def load_data():
 try:
     df_pred, df_master = load_data()
 except FileNotFoundError:
-    st.error("❌ Les fichiers de données sont introuvables. Vérifie que tu es bien à la racine du projet.")
+    st.error("Les fichiers de données sont introuvables. Vérifie que tu es bien à la racine du projet.")
     st.stop()
 
 # --- SIDEBAR (FILTRES) ---
@@ -61,7 +61,7 @@ with col4:
     st.metric("Heures Analysées", f"{total_hours} h")
 
 # --- GRAPHIQUE PRINCIPAL ---
-st.subheader("📈 Comparaison Réel vs Prédiction")
+st.subheader("Comparaison Réel vs Prédiction")
 
 fig = go.Figure()
 
@@ -97,7 +97,7 @@ st.plotly_chart(fig, use_container_width=True)
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.subheader("🌡️ Corrélation Température vs Conso")
+    st.subheader("Corrélation Température vs Conso")
     # Scatter plot interactif
     fig_scatter = px.scatter(
         filtered_df, 
@@ -110,7 +110,7 @@ with col_left:
     st.plotly_chart(fig_scatter, use_container_width=True)
 
 with col_right:
-    st.subheader("📉 Distribution des Erreurs")
+    st.subheader("Distribution des Erreurs")
     # Histogramme des erreurs
     filtered_df['error'] = filtered_df['demand_mwh'] - filtered_df['prediction']
     fig_hist = px.histogram(

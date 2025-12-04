@@ -1,15 +1,8 @@
-# For python 3.12 version(more stable)
-
 pandas
-numpy
-matplotlib
-pyarrow
 requests
-scikit-learn
-lightgbm
-prophet
-jupyterlab
-apache-airflow
 xgboost
 scikit-learn
-streamlit
+pyarrow
+fastparquet
+matplotlib
+seaborn

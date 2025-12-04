@@ -2,11 +2,13 @@ import requests
 import pandas as pd
 import os
 import time
+from datetime import datetime, timedelta 
 
 # --- CONFIGURATION ---
 OUTPUT_DIR = "data_raw/weather"
-START_DATE = "2022-01-01"
-END_DATE = "2024-01-01"
+START_DATE = "2020-01-01"
+# On prend la date d'hier (J-1) pour être sûr d'avoir la donnée complète
+END_DATE = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 # Coordonnées GPS des villes stratégiques
 LOCATIONS = {
@@ -21,10 +23,10 @@ def get_weather_data():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
         
-    print(f"🌤️ Démarrage de l'extraction météo ({START_DATE} au {END_DATE})...")
+    print(f"Démarrage de l'extraction météo ({START_DATE} au {END_DATE})...")
 
     for city, coords in LOCATIONS.items():
-        print(f"   📍 Traitement de {city}...")
+        print(f"Traitement de {city}...")
         
         # Paramètres de l'API Open-Meteo
         params = {
@@ -55,15 +57,15 @@ def get_weather_data():
             # Sauvegarde CSV Brut
             filename = f"{OUTPUT_DIR}/weather_{city}.csv"
             df.to_csv(filename, index=False)
-            print(f"      ✅ Sauvegardé : {filename} ({len(df)} lignes)")
+            print(f"Sauvegardé : {filename} ({len(df)} lignes)")
             
             # Petite pause
             time.sleep(1)
             
         except Exception as e:
-            print(f"      ❌ Erreur pour {city}: {e}")
+            print(f"Erreur pour {city}: {e}")
 
-    print("\n🏁 Extraction météo terminée.")
+    print("\n Extraction météo terminée.")
 
 if __name__ == "__main__":
     get_weather_data()

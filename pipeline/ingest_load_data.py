@@ -2,14 +2,15 @@ import requests
 import pandas as pd
 import time
 from dotenv import load_dotenv
+from datetime import datetime
 import os
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-START_DATE = "2022-01-01T00" # On prend 2 ans pour commencer
-END_DATE = "2024-01-01T00"
+START_DATE = "2020-01-01T00" 
+END_DATE = datetime.now().strftime("%Y-%m-%dT%H") 
 OUTPUT_DIR = "data_raw"
-OUTPUT_FILE = "us_load_2022_2023.csv"
+OUTPUT_FILE = "us_load_latest.csv"
 BASE_URL = "https://api.eia.gov/v2/electricity/rto/region-data/data/"
 
 def get_eia_data(api_key, start, end):
@@ -20,7 +21,7 @@ def get_eia_data(api_key, start, end):
     offset = 0
     length = 5000 # Max autorisé par appel
     
-    print(f"🚀 Démarrage de l'extraction de {start} à {end}...")
+    print(f" Démarrage de l'extraction de {start} à {end}...")
 
     while True:
         params = {
@@ -45,11 +46,11 @@ def get_eia_data(api_key, start, end):
             records = data['response']['data']
             
             if not records:
-                print("🏁 Fin des données reçues.")
+                print(" Fin des données reçues.")
                 break
             
             all_data.extend(records)
-            print(f"📦 Récupéré {len(records)} lignes (Total: {len(all_data)})...")
+            print(f" Récupéré {len(records)} lignes (Total: {len(all_data)})...")
             
             # Préparation pour la page suivante
             offset += length
@@ -58,7 +59,7 @@ def get_eia_data(api_key, start, end):
             time.sleep(0.5)
             
         except Exception as e:
-            print(f"❌ Erreur lors de la requête : {e}")
+            print(f" Erreur lors de la requête : {e}")
             break
 
     return pd.DataFrame(all_data)
@@ -76,10 +77,10 @@ if __name__ == "__main__":
         # 3. Sauvegarde CSV Brut
         full_path = os.path.join(OUTPUT_DIR, OUTPUT_FILE)
         df.to_csv(full_path, index=False)
-        print(f"\n✅ Succès ! Données sauvegardées dans : {full_path}")
-        print(f"📊 Dimension du dataset : {df.shape}")
+        print(f"\n Succès ! Données sauvegardées dans : {full_path}")
+        print(f" Dimension du dataset : {df.shape}")
         print("Aperçu :")
         print(df[['period', 'value']].head())
         print(df[['period', 'value']].tail())
     else:
-        print("⚠️ Aucune donnée récupérée.")
+        print(" Aucune donnée récupérée.")

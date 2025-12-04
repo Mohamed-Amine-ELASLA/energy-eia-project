@@ -6,7 +6,7 @@ INPUT_FILE = "data_processed/energy_dataset_master.parquet"
 OUTPUT_FILE = "data_processed/energy_dataset_features.parquet"
 
 def create_features():
-    print("🛠️ Création des Features (Indices pour le ML)...")
+    print("Création des Features (Indices pour le ML)...")
     
     df = pd.read_parquet(INPUT_FILE)
     
@@ -33,7 +33,7 @@ def create_features():
     # 3. Moyennes Mobiles (Rolling Windows)
     # La tendance des dernières 24h (pour lisser le bruit)
     # Note: On exclut la valeur actuelle pour éviter la fuite de données (closed='left' n'existe pas partout, donc on shift d'abord)
-    print("   Calcul des moyennes mobiles...")
+    print("Calcul des moyennes mobiles...")
     df['rolling_mean_24h'] = df['demand_mwh'].shift(1).rolling(window=24).mean()
     
     # 4. Nettoyage des NaNs créés par le décalage
@@ -45,9 +45,9 @@ def create_features():
     
     # 5. Sauvegarde
     df.to_parquet(OUTPUT_FILE, index=False)
-    print(f"✅ Dataset Enrichi sauvegardé : {OUTPUT_FILE}")
-    print(f"   Nouvelles dimensions : {df.shape}")
-    print("   Colonnes :", list(df.columns))
+    print(f"Dataset Enrichi sauvegardé : {OUTPUT_FILE}")
+    print(f"Nouvelles dimensions : {df.shape}")
+    print("Colonnes :", list(df.columns))
 
 if __name__ == "__main__":
     create_features()

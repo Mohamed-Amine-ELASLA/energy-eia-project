@@ -7,7 +7,7 @@ INPUT_PATTERN = "data_raw/weather/weather_*.csv" # Prend tous les fichiers weath
 OUTPUT_DIR = "data_processed/weather"
 
 def process_weather():
-    print("⚙️ Début du nettoyage Météo...")
+    print("Début du nettoyage Météo...")
     
     # 1. Lister tous les fichiers CSV météo
     files = glob.glob(INPUT_PATTERN)
@@ -30,7 +30,7 @@ def process_weather():
     # 3. Fusion verticale (On empile New York, Houston, LA l'un sous l'autre)
     df_final = pd.concat(all_data, ignore_index=True)
     
-    print(f"   Total lignes fusionnées : {len(df_final)}")
+    print(f"Total lignes fusionnées : {len(df_final)}")
     
     # 4. Partitionnement
     df_final['year'] = df_final['datetime_utc'].dt.year
@@ -40,7 +40,7 @@ def process_weather():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
         
-    print(f"💾 Sauvegarde dans {OUTPUT_DIR}...")
+    print(f"Sauvegarde dans {OUTPUT_DIR}...")
     df_final.to_parquet(
         OUTPUT_DIR,
         engine='pyarrow',
@@ -48,7 +48,7 @@ def process_weather():
         partition_cols=['year', 'month'],
         index=False
     )
-    print("✅ Météo nettoyée et sauvegardée.")
+    print("Météo nettoyée et sauvegardée.")
 
 if __name__ == "__main__":
     process_weather()

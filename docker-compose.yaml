@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  # 1. La Base de données d'Airflow
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+
+  # 2. Initialisation d'Airflow (Migration DB + Création User)
+  airflow-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --password admin --firstname Pierre --lastname Paul --role Admin --email admin@example.com
+      "
+
+  # 3. Le Scheduler + Webserver (Tout en un pour économiser la RAM)
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    restart: always
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False  # On ne veut pas les exemples par défaut
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+    volumes:
+      - ./dags:/opt/airflow/dags            # On lie le dossier DAGs
+      - ./pipeline:/opt/airflow/pipeline    # On lie tes scripts Python
+      - ./data_raw:/opt/airflow/data_raw    # On lie les données brutes
+      - ./data_processed:/opt/airflow/data_processed # On lie les données propres
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "airflow scheduler & airflow webserver"
+
+volumes:
+  postgres-db-volume:
