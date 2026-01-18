@@ -61,13 +61,19 @@ with DAG(
         bash_command='cd /opt/airflow && python pipeline/train_model.py'
     )
 
+    t6_predict_week_after = BashOperator(
+        task_id='predict_week_after',
+        bash_command='cd /opt/airflow && python pipeline/predict_week_after.py'
+    )
+
+
     # --- 3. Définition de l'ordre (Dépendances) ---
     # Load et Weather se lancent en même temps
     # Une fois Load fini -> Process Load
     # Une fois Weather fini -> Process Weather
-    # Une fois les deux Process finis -> Merge -> Train
-    
+    # Une fois les deux Process finis -> Merge -> Train -> Predict the week J+7
+
     t2_load >> t3_process_load
     t1_weather >> t3_process_weather
     
-    [t3_process_load, t3_process_weather] >> t4_merge_features >> t5_train_predict
+    [t3_process_load, t3_process_weather] >> t4_merge_features >> t5_train_predict >> t6_predict_week_after

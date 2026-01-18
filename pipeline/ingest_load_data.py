@@ -2,26 +2,37 @@ import requests
 import pandas as pd
 import time
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-START_DATE = "2020-01-01T00" 
-END_DATE = datetime.now().strftime("%Y-%m-%dT%H") 
+
+# On définit les années qu'on veut récupérer
+START_YEAR = 2020
+CURRENT_YEAR = datetime.now().year
+
 OUTPUT_DIR = "data_raw"
 OUTPUT_FILE = "us_load_latest.csv"
 BASE_URL = "https://api.eia.gov/v2/electricity/rto/region-data/data/"
 
-def get_eia_data(api_key, start, end):
+def get_data_by_year(api_key, year):
     """
-    Récupère les données de consommation US48 page par page.
+    Récupère une année complète de données.
     """
-    all_data = []
+    all_year_data = []
     offset = 0
-    length = 5000 # Max autorisé par appel
+    length = 5000
     
-    print(f" Démarrage de l'extraction de {start} à {end}...")
+    # Définition du début et fin de l'année demandée
+    start_date = f"{year}-01-01T00"
+    # Si c'est l'année en cours, on s'arrête à "maintenant", sinon fin d'année
+    if year == CURRENT_YEAR:
+        end_date = datetime.now().strftime("%Y-%m-%dT%H")
+    else:
+        end_date = f"{year}-12-31T23"
+
+    print(f"Traitement de l'année {year} ({start_date} -> {end_date})...")
 
     while True:
         params = {
@@ -30,8 +41,8 @@ def get_eia_data(api_key, start, end):
             "data[0]": "value",
             "facets[respondent][]": "US48",
             "facets[type][]": "D",
-            "start": start,
-            "end": end,
+            "start": start_date,
+            "end": end_date,
             "sort[0][column]": "period",
             "sort[0][direction]": "asc",
             "offset": offset,
@@ -40,47 +51,63 @@ def get_eia_data(api_key, start, end):
 
         try:
             response = requests.get(BASE_URL, params=params)
-            response.raise_for_status() # Lève une erreur si le code n'est pas 200
+            response.raise_for_status()
             
             data = response.json()
-            records = data['response']['data']
+            records = data.get('response', {}).get('data', [])
             
             if not records:
-                print(" Fin des données reçues.")
                 break
             
-            all_data.extend(records)
-            print(f" Récupéré {len(records)} lignes (Total: {len(all_data)})...")
+            all_year_data.extend(records)
             
-            # Préparation pour la page suivante
+            # Si on a reçu moins que le max, c'est que c'est la dernière page de l'année
+            if len(records) < length:
+                break
+                
             offset += length
-            
-            # Pause courte pour être gentil avec l'API (éviter le blocage)
-            time.sleep(0.5)
+            time.sleep(0.2) # Petite pause
             
         except Exception as e:
-            print(f" Erreur lors de la requête : {e}")
+            print(f"Erreur pour l'année {year}: {e}")
             break
-
-    return pd.DataFrame(all_data)
+            
+    return pd.DataFrame(all_year_data)
 
 # --- MAIN ---
 if __name__ == "__main__":
-    # 1. Création du dossier si inexistant
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
-        
-    # 2. Extraction
-    df = get_eia_data(API_KEY, START_DATE, END_DATE)
     
-    if not df.empty:
-        # 3. Sauvegarde CSV Brut
+    full_df_list = []
+    
+    print(f"Démarrage de l'extraction par morceaux (Chunking)...")
+
+    # BOUCLE SUR LES ANNÉES (2020 -> 2026)
+    for year in range(START_YEAR, CURRENT_YEAR + 1):
+        df_year = get_data_by_year(API_KEY, year)
+        
+        if not df_year.empty:
+            full_df_list.append(df_year)
+            print(f"Année {year} terminée : {len(df_year)} lignes récupérées.")
+        else:
+            print(f"Pas de données trouvées pour {year}.")
+
+    # Fusion finale
+    if full_df_list:
+        final_df = pd.concat(full_df_list, ignore_index=True)
+        
+        # Nettoyage doublons éventuels
+        final_df = final_df.drop_duplicates(subset=['period'])
+        final_df = final_df.sort_values('period')
+
         full_path = os.path.join(OUTPUT_DIR, OUTPUT_FILE)
-        df.to_csv(full_path, index=False)
-        print(f"\n Succès ! Données sauvegardées dans : {full_path}")
-        print(f" Dimension du dataset : {df.shape}")
-        print("Aperçu :")
-        print(df[['period', 'value']].head())
-        print(df[['period', 'value']].tail())
+        final_df.to_csv(full_path, index=False)
+        
+        print(f"\nExtraction terminée avec succès !")
+        print(f"Fichier : {full_path}")
+        print(f"Total lignes : {len(final_df)}")
+        print("Dernières données :")
+        print(final_df[['period', 'value']].tail())
     else:
-        print(" Aucune donnée récupérée.")
+        print("Aucune donnée au total.")

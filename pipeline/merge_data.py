@@ -58,7 +58,8 @@ def merge_datasets():
     if missing_weather > 0:
         print(f"  Attention : Il manque la météo pour {missing_weather} heures.")
         # Interpolation linéaire (bouche les petits trous par la moyenne des voisins)
-        df_master = df_master.interpolate(method='linear')
+        numeric_cols = df_master.select_dtypes(include=['number']).columns
+        df_master[numeric_cols] = df_master[numeric_cols].interpolate(method='linear')
         
     print(f"Dataset Final : {df_master.shape} (Lignes, Colonnes)")
     print(df_master.head())

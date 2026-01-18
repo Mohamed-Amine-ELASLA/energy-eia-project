@@ -46,6 +46,7 @@ services:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False  # On ne veut pas les exemples par défaut
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+      - API_KEY=${API_KEY}  
     volumes:
       - ./dags:/opt/airflow/dags            # On lie le dossier DAGs
       - ./pipeline:/opt/airflow/pipeline    # On lie tes scripts Python
